@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0a0e1a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="КЭА" />
+  <title>КЭА — Дашборд задач</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:         #0a0e1a;
+      --bg2:        #0f1525;
+      --bg3:        #151d35;
+      --border:     rgba(255,255,255,0.07);
+      --accent:     #4f8ef7;
+      --accent2:    #7c3aed;
+      --text:       #e8eaf6;
+      --text-dim:   #6b7a99;
+      --red:        #f43f5e;
+      --orange:     #fb923c;
+      --green:      #22d3a5;
+      --fire:       #ff6b35;
+      --card-h:     rgba(79,142,247,0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── ФОНОВАЯ СЕТКА ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79,142,247,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,247,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 0 80px;
+    }
+
+    /* ── ШАПКА ── */
+    header {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(79,142,247,0.08) 0%, transparent 100%);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .logo {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      color: var(--accent);
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .header-title {
+      margin-top: 12px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .header-title span {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ── СЧЁТЧИКИ ── */
+    .counters {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      padding: 16px 20px;
+    }
+
+    .counter-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .counter-card:hover { border-color: rgba(79,142,247,0.3); }
+
+    .counter-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .counter-label {
+      margin-top: 4px;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .c-active .counter-value { color: var(--accent); }
+    .c-wins   .counter-value { color: var(--green); }
+    .c-fire   .counter-value { color: var(--fire); }
+
+    /* ── ФИЛЬТРЫ ── */
+    .filters {
+      display: flex;
+      gap: 8px;
+      padding: 0 20px 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .filters::-webkit-scrollbar { display: none; }
+
+    .filter-btn {
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .filter-btn:hover:not(.active) {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    /* ── СПИСОК ЗАДАЧ ── */
+    .tasks-list {
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      transition: all 0.25s;
+      animation: slideIn 0.3s ease both;
+    }
+
+    .task-card:hover {
+      background: var(--bg3);
+      border-color: rgba(79,142,247,0.25);
+      transform: translateY(-1px);
+    }
+
+    .task-card.burning {
+      border-color: rgba(255,107,53,0.35);
+      background: linear-gradient(135deg, rgba(255,107,53,0.06), var(--bg2));
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .task-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .task-name {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.35;
+      flex: 1;
+    }
+
+    .task-pct {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    .pct-low    { color: var(--red); }
+    .pct-mid    { color: var(--orange); }
+    .pct-high   { color: var(--green); }
+
+    /* прогресс-бар */
+    .progress-wrap {
+      height: 5px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .bar-low  { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+    .bar-mid  { background: linear-gradient(90deg, #fb923c, #fbbf24); }
+    .bar-high { background: linear-gradient(90deg, #22d3a5, #4ade80); }
+
+    .task-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .task-employee {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .task-status {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-align: right;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fire-badge {
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ── ЗАГРУЗКА ── */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── ОШИБКА ── */
+    .error-box {
+      margin: 20px;
+      padding: 16px;
+      background: rgba(244,63,94,0.1);
+      border: 1px solid rgba(244,63,94,0.3);
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--red);
+      line-height: 1.5;
+    }
+
+    /* ── ПУСТО ── */
+    .empty {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0; right: 0;
+      padding: 10px 20px;
+      background: rgba(10,14,26,0.92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: var(--text-dim);
+      z-index: 100;
+    }
+
+    .update-time { letter-spacing: 0.05em; }
+
+    .refresh-btn {
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .refresh-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .refresh-btn.spinning { animation: spin 0.8s linear infinite; }
+
+    /* ── СЕКЦИЯ-РАЗДЕЛИТЕЛЬ ── */
+    .section-label {
+      padding: 16px 20px 8px;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrapper">
+
+  <!-- ШАПКА -->
+  <header>
+    <div class="header-top">
+      <div class="logo">КЭА · Дашборд</div>
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        <span>LIVE</span>
+      </div>
+    </div>
+    <div class="header-title">
+      Задачи<br><span>команды</span>
+    </div>
+  </header>
+
+  <!-- СЧЁТЧИКИ -->
+  <div class="counters">
+    <div class="counter-card c-active">
+      <div class="counter-value" id="cnt-active">—</div>
+      <div class="counter-label">В работе</div>
+    </div>
+    <div class="counter-card c-wins">
+      <div class="counter-value" id="cnt-wins">—</div>
+      <div class="counter-label">Победы</div>
+    </div>
+    <div class="counter-card c-fire">
+      <div class="counter-value" id="cnt-fire">—</div>
+      <div class="counter-label">Горящие</div>
+    </div>
+  </div>
+
+  <!-- ФИЛЬТРЫ -->
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">Все</button>
+    <button class="filter-btn" data-filter="burning">🔥 Горящие</button>
+    <button class="filter-btn" data-filter="low">Риск (0–30%)</button>
+    <button class="filter-btn" data-filter="high">Готово (80%+)</button>
+  </div>
+
+  <!-- КОНТЕНТ -->
+  <div id="content">
+    <div class="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">Загружаем данные...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="update-time" id="update-time">Обновление...</span>
+  <button class="refresh-btn" id="refresh-btn" onclick="loadData()">↻ Обновить</button>
+</footer>
+
+<script>
+// ============================================================
+// ⚙️  НАСТРОЙКА — замени на свой URL после деплоя Apps Script
+// ============================================================
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzaKKKWlJonU3ciu0Wbdr6pJt8f8nzt-zP7Xg2DHJrEoVEfXA6QgumyP3ygsL79ljN3/exec';
+// ============================================================
+
+let allTasks = [];
+let currentFilter = 'all';
+let refreshInterval;
+
+// Загрузка данных
+async function loadData() {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?t=' + Date.now());
+    const data = await res.json();
+
+    allTasks = data.tasks || [];
+
+    // Счётчики
+    document.getElementById('cnt-active').textContent = allTasks.length;
+    document.getElementById('cnt-wins').textContent   = data.wins || 0;
+    document.getElementById('cnt-fire').textContent   = allTasks.filter(t => t.burning).length;
+
+    // Обновление времени
+    const now = new Date();
+    document.getElementById('update-time').textContent =
+      now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    renderTasks();
+
+  } catch (err) {
+    document.getElementById('content').innerHTML = `
+      <div class="error-box">
+        ⚠️ Не удалось загрузить данные.<br><br>
+        Проверь:<br>
+        1. URL Apps Script в коде<br>
+        2. Деплой опубликован как "Все (Anyone)"<br>
+        3. Есть доступ к интернету<br><br>
+        <small>${err.message}</small>
+      </div>`;
+  }
+
+  btn.classList.remove('spinning');
+}
+
+// Отрисовка задач
+function renderTasks() {
+  let tasks = [...allTasks];
+
+  // Сортировка: сначала горящие, потом по прогрессу
+  tasks.sort((a, b) => {
+    if (a.burning !== b.burning) return b.burning ? 1 : -1;
+    return a.progress - b.progress;
+  });
+
+  // Фильтр
+  if (currentFilter === 'burning') tasks = tasks.filter(t => t.burning);
+  if (currentFilter === 'low')     tasks = tasks.filter(t => t.progress <= 30);
+  if (currentFilter === 'high')    tasks = tasks.filter(t => t.progress >= 80);
+
+  if (tasks.length === 0) {
+    document.getElementById('content').innerHTML =
+      '<div class="empty">Нет задач по выбранному фильтру</div>';
+    return;
+  }
+
+  // Группировка по риску
+  const burning = tasks.filter(t => t.burning);
+  const normal  = tasks.filter(t => !t.burning);
+
+  let html = '';
+
+  if (burning.length && currentFilter === 'all') {
+    html += `<div class="section-label">🔥 Горящие (${burning.length})</div>`;
+    html += '<div class="tasks-list">';
+    burning.forEach((t, i) => { html += taskCard(t, i); });
+    html += '</div>';
+
+    if (normal.length) {
+      html += `<div class="section-label">В работе (${normal.length})</div>`;
+      html += '<div class="tasks-list">';
+      normal.forEach((t, i) => { html += taskCard(t, i); });
+      html += '</div>';
+    }
+  } else {
+    html += '<div class="tasks-list">';
+    tasks.forEach((t, i) => { html += taskCard(t, i); });
+    html += '</div>';
+  }
+
+  document.getElementById('content').innerHTML = html;
+}
+
+// HTML карточки задачи
+function taskCard(t, idx) {
+  const pct  = Math.min(100, Math.max(0, t.progress));
+  const tier = pct <= 30 ? 'low' : pct <= 80 ? 'mid' : 'high';
+  const delay = idx * 40;
+
+  return `
+  <div class="task-card ${t.burning ? 'burning' : ''}" style="animation-delay:${delay}ms">
+    <div class="task-top">
+      <div class="task-name">${escHtml(t.task)}</div>
+      <div class="task-pct pct-${tier}">${pct}%</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar bar-${tier}" style="width:${pct}%"></div>
+    </div>
+    <div class="task-bottom">
+      <div class="task-employee">${escHtml(t.employee)}</div>
+      <div class="task-status">${escHtml(t.status)}</div>
+      ${t.burning ? '<div class="fire-badge">🔥</div>' : ''}
+    </div>
+  </div>`;
+}
+
+function escHtml(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+// Фильтры
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderTasks();
+  });
+});
+
+// Автообновление каждые 30 секунд
+loadData();
+refreshInterval = setInterval(loadData, 30000);
+</script>
+</body>
+</html>
