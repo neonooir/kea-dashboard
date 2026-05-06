@@ -3,602 +3,304 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <meta name="theme-color" content="#0a0e1a" />
+  <meta name="theme-color" content="#0f172a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="КЭА" />
-  <title>КЭА — Дашборд задач</title>
+  <title>КЭА — Мониторинг</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg:         #0a0e1a;
-      --bg2:        #0f1525;
-      --bg3:        #151d35;
-      --border:     rgba(255,255,255,0.07);
-      --accent:     #4f8ef7;
-      --accent2:    #7c3aed;
-      --text:       #e8eaf6;
-      --text-dim:   #6b7a99;
-      --red:        #f43f5e;
-      --orange:     #fb923c;
-      --green:      #22d3a5;
-      --fire:       #ff6b35;
-      --card-h:     rgba(79,142,247,0.06);
+      --bg: #0f172a;
+      --bg2: #1e293b;
+      --bg3: #334155;
+      --border: rgba(148,163,184,0.12);
+      --accent: #3b82f6;
+      --text: #f1f5f9;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --cat1: #6366f1; --cat2: #8b5cf6; --cat3: #ec4899;
+      --cat4: #f59e0b; --cat5: #10b981; --cat6: #06b6d4; --cat7: #3b82f6;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; -webkit-font-smoothing: antialiased; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'JetBrains Mono', monospace;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+    .app { max-width: 520px; margin: 0 auto; padding-bottom: 60px; }
 
-    /* ── ФОНОВАЯ СЕТКА ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(79,142,247,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(79,142,247,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
-    }
+    /* Header */
+    header { padding: 20px 16px 16px; }
+    .header-row { display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 11px; font-weight: 700; letter-spacing: 0.15em; color: var(--text3); text-transform: uppercase; }
+    .live { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text3); }
+    .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+    .title { margin-top: 10px; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
 
-    .wrapper {
-      position: relative;
-      z-index: 1;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 0 0 80px;
-    }
+    /* Counters */
+    .counters { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 0 16px 12px; }
+    .cnt { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 10px; text-align: center; }
+    .cnt-val { font-size: 24px; font-weight: 700; }
+    .cnt-lbl { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+    .cnt-blue .cnt-val { color: var(--accent); }
+    .cnt-green .cnt-val { color: var(--green); }
+    .cnt-amber .cnt-val { color: var(--amber); }
 
-    /* ── ШАПКА ── */
-    header {
-      padding: 24px 20px 16px;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(180deg, rgba(79,142,247,0.08) 0%, transparent 100%);
-    }
+    /* Tabs */
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 16px; margin-bottom: 12px; }
+    .tab { padding: 8px 14px; font-size: 12px; font-weight: 500; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
-    .logo {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.3em;
-      color: var(--accent);
-      text-transform: uppercase;
-      opacity: 0.8;
-    }
-
-    .live-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10px;
-      color: var(--text-dim);
-    }
-
-    .live-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--green);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.8); }
-    }
-
-    .header-title {
-      margin-top: 12px;
-      font-family: 'Unbounded', sans-serif;
-      font-size: 22px;
-      font-weight: 900;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-    }
-
-    .header-title span {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* ── СЧЁТЧИКИ ── */
-    .counters {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-      padding: 16px 20px;
-    }
-
-    .counter-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 12px;
-      text-align: center;
-      transition: border-color 0.2s;
-    }
-
-    .counter-card:hover { border-color: rgba(79,142,247,0.3); }
-
-    .counter-value {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 26px;
-      font-weight: 900;
-      line-height: 1;
-    }
-
-    .counter-label {
-      margin-top: 4px;
-      font-size: 9px;
-      letter-spacing: 0.15em;
-      color: var(--text-dim);
-      text-transform: uppercase;
-    }
-
-    .c-active .counter-value { color: var(--accent); }
-    .c-wins   .counter-value { color: var(--green); }
-    .c-fire   .counter-value { color: var(--fire); }
-
-    /* ── ФИЛЬТРЫ ── */
-    .filters {
-      display: flex;
-      gap: 8px;
-      padding: 0 20px 16px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
+    /* Filters */
+    .filters { display: flex; gap: 6px; padding: 0 16px 12px; overflow-x: auto; scrollbar-width: none; }
     .filters::-webkit-scrollbar { display: none; }
+    .fbtn { flex-shrink: 0; padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text3); font-family: 'Inter',sans-serif; font-size: 11px; cursor: pointer; transition: all .2s; }
+    .fbtn.active { background: var(--accent); border-color: var(--accent); color: white; }
 
-    .filter-btn {
-      flex-shrink: 0;
-      padding: 6px 14px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-dim);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+    /* Search */
+    .search-wrap { padding: 0 16px 12px; }
+    .search { width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); font-family: 'Inter',sans-serif; font-size: 12px; outline: none; }
+    .search::placeholder { color: var(--text3); }
+    .search:focus { border-color: var(--accent); }
 
-    .filter-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
-    }
+    /* Cards */
+    .cards { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; transition: all .2s; }
+    .card:hover { border-color: rgba(59,130,246,.3); }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+    .card-title { font-size: 13px; font-weight: 600; line-height: 1.3; flex: 1; }
+    .card-id { font-size: 10px; color: var(--text3); flex-shrink: 0; padding: 2px 6px; background: var(--bg3); border-radius: 4px; }
+    .card-cat { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; font-weight: 500; }
+    .card-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+    .card-label { font-size: 10px; color: var(--text3); flex-shrink: 0; min-width: 55px; }
+    .card-value { font-size: 11px; color: var(--text2); flex: 1; line-height: 1.4; }
+    .card-person { font-size: 11px; color: var(--text2); margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); }
 
-    .filter-btn:hover:not(.active) {
-      border-color: var(--accent);
-      color: var(--text);
-    }
+    /* Category colors */
+    .cat-eco { background: rgba(16,185,129,.15); color: var(--green); }
+    .cat-strat { background: rgba(99,102,241,.15); color: var(--cat1); }
+    .cat-market { background: rgba(236,72,153,.15); color: var(--cat3); }
+    .cat-tariff { background: rgba(245,158,11,.15); color: var(--amber); }
+    .cat-tech { background: rgba(6,182,212,.15); color: var(--cat6); }
+    .cat-hr { background: rgba(139,92,246,.15); color: var(--cat2); }
+    .cat-kea { background: rgba(59,130,246,.15); color: var(--accent); }
 
-    /* ── СПИСОК ЗАДАЧ ── */
-    .tasks-list {
-      padding: 0 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    /* Win card */
+    .win-card { background: var(--bg2); border: 1px solid rgba(16,185,129,.2); border-radius: 10px; padding: 14px; }
+    .win-card .card-title { color: var(--green); }
 
-    .task-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      transition: all 0.25s;
-      animation: slideIn 0.3s ease both;
-    }
+    /* Empty state */
+    .empty { padding: 40px 16px; text-align: center; color: var(--text3); font-size: 13px; }
 
-    .task-card:hover {
-      background: var(--bg3);
-      border-color: rgba(79,142,247,0.25);
-      transform: translateY(-1px);
-    }
-
-    .task-card.burning {
-      border-color: rgba(255,107,53,0.35);
-      background: linear-gradient(135deg, rgba(255,107,53,0.06), var(--bg2));
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .task-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .task-name {
-      font-size: 13px;
-      font-weight: 600;
-      line-height: 1.35;
-      flex: 1;
-    }
-
-    .task-pct {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 18px;
-      font-weight: 900;
-      flex-shrink: 0;
-    }
-
-    .pct-low    { color: var(--red); }
-    .pct-mid    { color: var(--orange); }
-    .pct-high   { color: var(--green); }
-
-    /* прогресс-бар */
-    .progress-wrap {
-      height: 5px;
-      background: rgba(255,255,255,0.07);
-      border-radius: 3px;
-      overflow: hidden;
-      margin-bottom: 10px;
-    }
-
-    .progress-bar {
-      height: 100%;
-      border-radius: 3px;
-      transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
-    }
-
-    .bar-low  { background: linear-gradient(90deg, #f43f5e, #fb7185); }
-    .bar-mid  { background: linear-gradient(90deg, #fb923c, #fbbf24); }
-    .bar-high { background: linear-gradient(90deg, #22d3a5, #4ade80); }
-
-    .task-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .task-employee {
-      font-size: 11px;
-      color: var(--text-dim);
-    }
-
-    .task-status {
-      font-size: 10px;
-      color: var(--text-dim);
-      text-align: right;
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .fire-badge {
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-
-    /* ── ЗАГРУЗКА ── */
-    .loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 80px 20px;
-      gap: 16px;
-    }
-
-    .spinner {
-      width: 36px;
-      height: 36px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
+    /* Loading */
+    .loading { display: flex; flex-direction: column; align-items: center; padding: 60px 16px; gap: 12px; }
+    .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .loading-text {
-      font-size: 12px;
-      color: var(--text-dim);
-      letter-spacing: 0.1em;
-    }
+    /* Footer */
+    footer { position: fixed; bottom: 0; left: 0; right: 0; padding: 8px 16px; background: rgba(15,23,42,.95); backdrop-filter: blur(8px); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--text3); z-index: 100; }
+    .rbtn { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text3); font-family: 'Inter',sans-serif; font-size: 10px; cursor: pointer; }
+    .rbtn:active { background: var(--bg3); }
 
-    /* ── ОШИБКА ── */
-    .error-box {
-      margin: 20px;
-      padding: 16px;
-      background: rgba(244,63,94,0.1);
-      border: 1px solid rgba(244,63,94,0.3);
-      border-radius: 12px;
-      font-size: 12px;
-      color: var(--red);
-      line-height: 1.5;
-    }
+    /* Count badge */
+    .count-badge { font-size: 11px; color: var(--text3); margin-left: 4px; }
 
-    /* ── ПУСТО ── */
-    .empty {
-      padding: 60px 20px;
-      text-align: center;
-      color: var(--text-dim);
-      font-size: 13px;
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      position: fixed;
-      bottom: 0;
-      left: 0; right: 0;
-      padding: 10px 20px;
-      background: rgba(10,14,26,0.92);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 10px;
-      color: var(--text-dim);
-      z-index: 100;
-    }
-
-    .update-time { letter-spacing: 0.05em; }
-
-    .refresh-btn {
-      padding: 5px 12px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-dim);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .refresh-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .refresh-btn.spinning { animation: spin 0.8s linear infinite; }
-
-    /* ── СЕКЦИЯ-РАЗДЕЛИТЕЛЬ ── */
-    .section-label {
-      padding: 16px 20px 8px;
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+    .card, .win-card { animation: fadeIn .25s ease both; }
   </style>
 </head>
-
 <body>
-<div class="wrapper">
-
-  <!-- ШАПКА -->
+<div class="app">
   <header>
-    <div class="header-top">
-      <div class="logo">КЭА · Дашборд</div>
-      <div class="live-badge">
-        <div class="live-dot"></div>
-        <span>LIVE</span>
-      </div>
+    <div class="header-row">
+      <div class="logo">Казахстанская электроэнергетическая ассоциация</div>
+      <div class="live"><div class="live-dot"></div>LIVE</div>
     </div>
-    <div class="header-title">
-      Задачи<br><span>команды</span>
-    </div>
+    <div class="title">Мониторинг задач</div>
   </header>
 
-  <!-- СЧЁТЧИКИ -->
   <div class="counters">
-    <div class="counter-card c-active">
-      <div class="counter-value" id="cnt-active">—</div>
-      <div class="counter-label">В работе</div>
-    </div>
-    <div class="counter-card c-wins">
-      <div class="counter-value" id="cnt-wins">—</div>
-      <div class="counter-label">Победы</div>
-    </div>
-    <div class="counter-card c-fire">
-      <div class="counter-value" id="cnt-fire">—</div>
-      <div class="counter-label">Горящие</div>
-    </div>
+    <div class="cnt cnt-blue"><div class="cnt-val" id="c-tasks">—</div><div class="cnt-lbl">В работе</div></div>
+    <div class="cnt cnt-green"><div class="cnt-val" id="c-wins">—</div><div class="cnt-lbl">Победы</div></div>
+    <div class="cnt cnt-amber"><div class="cnt-val" id="c-pending">—</div><div class="cnt-lbl">На согласовании</div></div>
   </div>
 
-  <!-- ФИЛЬТРЫ -->
-  <div class="filters">
-    <button class="filter-btn active" data-filter="all">Все</button>
-    <button class="filter-btn" data-filter="burning">🔥 Горящие</button>
-    <button class="filter-btn" data-filter="low">Риск (0–30%)</button>
-    <button class="filter-btn" data-filter="high">Готово (80%+)</button>
+  <div class="tabs">
+    <div class="tab active" data-tab="tasks">Задачи</div>
+    <div class="tab" data-tab="wins">Победы</div>
   </div>
 
-  <!-- КОНТЕНТ -->
-  <div id="content">
-    <div class="loading">
-      <div class="spinner"></div>
-      <div class="loading-text">Загружаем данные...</div>
-    </div>
+  <div id="tasks-view">
+    <div class="search-wrap"><input class="search" id="search" placeholder="Поиск по задачам..." /></div>
+    <div class="filters" id="filters"></div>
+    <div class="cards" id="cards"></div>
   </div>
 
+  <div id="wins-view" style="display:none">
+    <div class="cards" id="win-cards"></div>
+  </div>
+
+  <div id="loading" style="display:none"><div class="loading"><div class="spinner"></div></div></div>
 </div>
 
-<!-- FOOTER -->
 <footer>
-  <span class="update-time" id="update-time">Обновление...</span>
-  <button class="refresh-btn" id="refresh-btn" onclick="loadData()">↻ Обновить</button>
+  <span id="update-time">Загрузка...</span>
+  <button class="rbtn" onclick="loadData()">↻ Обновить</button>
 </footer>
 
 <script>
-// ============================================================
-// ⚙️  НАСТРОЙКА — замени на свой URL после деплоя Apps Script
-// ============================================================
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzaKKKWlJonU3ciu0Wbdr6pJt8f8nzt-zP7Xg2DHJrEoVEfXA6QgumyP3ygsL79ljN3/exec';
-// ============================================================
 
-let allTasks = [];
-let currentFilter = 'all';
-let refreshInterval;
+let allTasks = [], allWins = [];
+let currentTab = 'tasks', currentCat = 'all', searchQuery = '';
 
-// Загрузка данных
+const catMap = {
+  'Экология': { cls: 'cat-eco', short: 'Экология' },
+  'Стратегия': { cls: 'cat-strat', short: 'Стратегия' },
+  'Рынок': { cls: 'cat-market', short: 'Рынок' },
+  'Тарифы': { cls: 'cat-tariff', short: 'Тарифы' },
+  'Техн': { cls: 'cat-tech', short: 'Техника' },
+  'Кадры': { cls: 'cat-hr', short: 'Кадры' },
+  'КЭА': { cls: 'cat-kea', short: 'КЭА' }
+};
+
+function getCat(cat) {
+  if (!cat) return { cls: 'cat-kea', short: '—' };
+  for (const [key, val] of Object.entries(catMap)) {
+    if (cat.includes(key)) return val;
+  }
+  return { cls: 'cat-kea', short: cat.substring(0, 12) };
+}
+
 async function loadData() {
-  const btn = document.getElementById('refresh-btn');
-  btn.classList.add('spinning');
-
+  document.getElementById('loading').style.display = 'block';
   try {
     const res = await fetch(APPS_SCRIPT_URL + '?t=' + Date.now());
     const data = await res.json();
-
     allTasks = data.tasks || [];
+    allWins = data.wins || [];
 
-    // Счётчики
-    document.getElementById('cnt-active').textContent = allTasks.length;
-    document.getElementById('cnt-wins').textContent   = data.wins || 0;
-    document.getElementById('cnt-fire').textContent   = allTasks.filter(t => t.burning).length;
+    document.getElementById('c-tasks').textContent = allTasks.length;
+    document.getElementById('c-wins').textContent = data.winsCount || 0;
+    document.getElementById('c-pending').textContent = data.pendingCount || 0;
 
-    // Обновление времени
     const now = new Date();
     document.getElementById('update-time').textContent =
-      now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      now.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
 
-    renderTasks();
-
-  } catch (err) {
-    document.getElementById('content').innerHTML = `
-      <div class="error-box">
-        ⚠️ Не удалось загрузить данные.<br><br>
-        Проверь:<br>
-        1. URL Apps Script в коде<br>
-        2. Деплой опубликован как "Все (Anyone)"<br>
-        3. Есть доступ к интернету<br><br>
-        <small>${err.message}</small>
-      </div>`;
+    buildFilters();
+    render();
+  } catch(e) {
+    document.getElementById('cards').innerHTML =
+      '<div class="empty">⚠️ Ошибка загрузки данных</div>';
   }
-
-  btn.classList.remove('spinning');
+  document.getElementById('loading').style.display = 'none';
 }
 
-// Отрисовка задач
+function buildFilters() {
+  const cats = [...new Set(allTasks.map(t => getCat(t.category).short))];
+  let html = '<button class="fbtn active" data-cat="all">Все</button>';
+  cats.forEach(c => { html += `<button class="fbtn" data-cat="${c}">${c}</button>`; });
+  document.getElementById('filters').innerHTML = html;
+
+  document.querySelectorAll('.fbtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCat = btn.dataset.cat;
+      render();
+    });
+  });
+}
+
+function render() {
+  if (currentTab === 'tasks') renderTasks();
+  else renderWins();
+}
+
 function renderTasks() {
   let tasks = [...allTasks];
 
-  // Сортировка: сначала горящие, потом по прогрессу
-  tasks.sort((a, b) => {
-    if (a.burning !== b.burning) return b.burning ? 1 : -1;
-    return a.progress - b.progress;
-  });
+  if (currentCat !== 'all') {
+    tasks = tasks.filter(t => getCat(t.category).short === currentCat);
+  }
 
-  // Фильтр
-  if (currentFilter === 'burning') tasks = tasks.filter(t => t.burning);
-  if (currentFilter === 'low')     tasks = tasks.filter(t => t.progress <= 30);
-  if (currentFilter === 'high')    tasks = tasks.filter(t => t.progress >= 80);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    tasks = tasks.filter(t =>
+      (t.task||'').toLowerCase().includes(q) ||
+      (t.status||'').toLowerCase().includes(q) ||
+      (t.responsible||'').toLowerCase().includes(q)
+    );
+  }
 
-  if (tasks.length === 0) {
-    document.getElementById('content').innerHTML =
-      '<div class="empty">Нет задач по выбранному фильтру</div>';
+  if (!tasks.length) {
+    document.getElementById('cards').innerHTML = '<div class="empty">Нет задач</div>';
     return;
   }
 
-  // Группировка по риску
-  const burning = tasks.filter(t => t.burning);
-  const normal  = tasks.filter(t => !t.burning);
-
   let html = '';
+  tasks.forEach((t, i) => {
+    const cat = getCat(t.category);
+    html += `<div class="card" style="animation-delay:${i*30}ms">
+      <div class="card-top">
+        <div class="card-title">${esc(t.task)}</div>
+        <div class="card-id">#${t.id}</div>
+      </div>
+      <div class="card-cat ${cat.cls}">${cat.short}</div>
+      ${t.status ? `<div class="card-row"><div class="card-label">Статус</div><div class="card-value">${esc(t.status)}</div></div>` : ''}
+      ${t.nextStep ? `<div class="card-row"><div class="card-label">Шаг</div><div class="card-value">${esc(t.nextStep)}</div></div>` : ''}
+      <div class="card-person">👤 ${esc(t.responsible || '—')}${t.govBody ? ' · 🏛 ' + esc(t.govBody) : ''}</div>
+    </div>`;
+  });
 
-  if (burning.length && currentFilter === 'all') {
-    html += `<div class="section-label">🔥 Горящие (${burning.length})</div>`;
-    html += '<div class="tasks-list">';
-    burning.forEach((t, i) => { html += taskCard(t, i); });
-    html += '</div>';
+  document.getElementById('cards').innerHTML = html;
+}
 
-    if (normal.length) {
-      html += `<div class="section-label">В работе (${normal.length})</div>`;
-      html += '<div class="tasks-list">';
-      normal.forEach((t, i) => { html += taskCard(t, i); });
-      html += '</div>';
-    }
-  } else {
-    html += '<div class="tasks-list">';
-    tasks.forEach((t, i) => { html += taskCard(t, i); });
-    html += '</div>';
+function renderWins() {
+  if (!allWins.length) {
+    document.getElementById('win-cards').innerHTML = '<div class="empty">Нет побед</div>';
+    return;
   }
-
-  document.getElementById('content').innerHTML = html;
+  let html = '';
+  allWins.forEach((w, i) => {
+    const cat = getCat(w.category);
+    html += `<div class="win-card" style="animation-delay:${i*30}ms">
+      <div class="card-top">
+        <div class="card-title">✅ ${esc(w.task)}</div>
+      </div>
+      <div class="card-cat ${cat.cls}">${cat.short}</div>
+      ${w.result ? `<div class="card-row"><div class="card-label">Результат</div><div class="card-value">${esc(w.result)}</div></div>` : ''}
+    </div>`;
+  });
+  document.getElementById('win-cards').innerHTML = html;
 }
 
-// HTML карточки задачи
-function taskCard(t, idx) {
-  const pct  = Math.min(100, Math.max(0, t.progress));
-  const tier = pct <= 30 ? 'low' : pct <= 80 ? 'mid' : 'high';
-  const delay = idx * 40;
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  return `
-  <div class="task-card ${t.burning ? 'burning' : ''}" style="animation-delay:${delay}ms">
-    <div class="task-top">
-      <div class="task-name">${escHtml(t.task)}</div>
-      <div class="task-pct pct-${tier}">${pct}%</div>
-    </div>
-    <div class="progress-wrap">
-      <div class="progress-bar bar-${tier}" style="width:${pct}%"></div>
-    </div>
-    <div class="task-bottom">
-      <div class="task-employee">${escHtml(t.employee)}</div>
-      <div class="task-status">${escHtml(t.status)}</div>
-      ${t.burning ? '<div class="fire-badge">🔥</div>' : ''}
-    </div>
-  </div>`;
-}
-
-function escHtml(str) {
-  return String(str || '')
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;');
-}
-
-// Фильтры
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = btn.dataset.filter;
-    renderTasks();
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentTab = tab.dataset.tab;
+    document.getElementById('tasks-view').style.display = currentTab === 'tasks' ? 'block' : 'none';
+    document.getElementById('wins-view').style.display = currentTab === 'wins' ? 'block' : 'none';
+    render();
   });
 });
 
-// Автообновление каждые 30 секунд
+// Search
+document.getElementById('search').addEventListener('input', e => {
+  searchQuery = e.target.value;
+  render();
+});
+
 loadData();
-refreshInterval = setInterval(loadData, 30000);
+setInterval(loadData, 30000);
 </script>
 </body>
 </html>
